@@ -98,7 +98,7 @@ public void drwawParticle(PVector particle, float s) {
 public void draw() {
 
 	// \u753b\u9762\u306e\u521d\u671f\u5316
-	background(20);
+	background(20, 60);
 
 	pushMatrix();
 
@@ -106,15 +106,16 @@ public void draw() {
 	  translate(width/2, height/2, 0);
 
 	  // \u30aa\u30d6\u30b8\u30a7\u30af\u30c8\u306e\u63cf\u753b
-	  for(int i = 3; i < 8; i++){
-      stroke(255 - (10 * i), 200 - (20 * i));
+	  for(int i = 0; i < 8; i++){
+      stroke(255 - (10 * i), 200 - (30 * i));
 	    drawSphereRotate(i);
 	  }
 
 	popMatrix();
 
+  // \u5149\u308b\u70b9\u3092\u63cf\u753b
 	PVector particle = new PVector(width/2, height/2, 0);
-	drwawParticle(particle, t);
+	//drwawParticle(particle, t);
 }
 
 
@@ -122,46 +123,48 @@ public void draw() {
 public void drawSphereRotate(int n){
 
   // \u30c8\u30ea\u30ac\u30fc\u3092\u53d6\u5f97
-  float radius = n * 40;
+  float radius = n * 30;
 
-  strokeWeight(5);
+  // \u70b9\u306e\u592a\u3055
+  strokeWeight(3);
 
   // \u30ea\u30b9\u30c8\u306e\u521d\u671f\u5316
   dotList.clear();
 
   t = t + 1;
-  float radt = radians(t);
 
   pushMatrix();
-    rotateX(frameCount * n * 0.1f + oscp);
-    rotateY(frameCount * n * 0.1f + oscp);
-    float s = 0;
+    rotateX(frameCount * n * 0.005f);
+    rotateY(frameCount * n * 0.005f);
+    rotateZ(frameCount * n * 0.005f);
+    rotateZ(oscp);
 
     PVector lastPos = new PVector(0, 0, 0);
     PVector thisPos = new PVector(0, 0, 0);
-
     float noisFactor = noise(_noiseSeed);
-    float noisVal = 0;
-    for(float i = 0; i < 360; i = i + 36){ // \u6a2a
+    
+    for(float i = 0; i < 360; i = i + 32){ // \u6a2a
     //for(float i = 0; i < 360; i = i + 64*noise(_noiseSeed)){ // \u6a2a
       float radianS = radians(i);
       for(float j = 0; j < 360; j = j + 18){ // \u7e26
       //for(float j = 0; j < 360; j = j + 64*noise(_noiseSeed)){ // \u7e26
         float radianT = radians(j);
         float radiant = radians(t);
-        thisPos.x = 0 + (radius * cos(radianS) * sin(radianT)) + (noisFactor*10)-5;
+        thisPos.x = 0 + (radius * cos(radianS) * sin(radianT));// + (noisFactor*10)-5;
         thisPos.y = 0 + (radius * sin(radianS) * sin(radianT));
-        thisPos.z = 0 + (radius * cos(radianT))  + (noisFactor*10)-5;
+        thisPos.z = 0 + (radius * cos(radianT));//  + (noisFactor*10)-5;
         if(lastPos.x != 0){
-          point(thisPos.x, thisPos.y, thisPos.z);
+          //point(thisPos.x, thisPos.y, thisPos.z);
         }
         
+        // \u30ea\u30b9\u30c8\u3078\u306e\u8ffd\u52a0
         dotObj d1 = new dotObj();
         d1.p = new PVector(thisPos.x, thisPos.y, thisPos.z);
         dotList.add(d1);
-        //dotList.add(thisPos.get());
 
+        // \u76f4\u524d\u306e\u70b9\u3092\u66f4\u65b0
         lastPos = thisPos.get();
+        // \u30ce\u30a4\u30ba\u306e\u7a2e\u3092\u66f4\u65b0
         _noiseSeed = _noiseSeed + 0.01f;
       }
     }
@@ -183,39 +186,46 @@ public void drawSphereRotate(int n){
 // \u6700\u77ed\u70b9\u306e\u63a2\u7d22
 public void drawCloseDot(int n){
 
-  strokeWeight((9 - n)/2);
+  // \u7dda\u306e\u592a\u3055\uff08\u5916\u5074\u3092\u3088\u308a\u7d30\u304f\uff09
+  strokeWeight((9 - n)/3 + 0.5f);
 
-  // \u30ea\u30b9\u30c8\u306e\u521d\u671f\u5316
   pushMatrix();
-    //beginShape();
-    noFill();
+    // \u30ea\u30b9\u30c8\u306e\u5168\u8981\u7d20\u3092\u30eb\u30fc\u30d7
     for(int i = 1; i < dotList.size(); i++){
+      // \u30ea\u30b9\u30c8\u306e\u521d\u671f\u5316
       minDotList.clear();
+      // \u6700\u77ed\u8ddd\u96e2\u306e\u70b9
       PVector min_Pos = new PVector(0, 0, 0);
+      // \u30ea\u30b9\u30c8\u304b\u3089\u8981\u7d20\u3092\u53d6\u5f97
       PVector p1 = dotList.get(i).p;
+      //\u3000\u53d6\u5f97\u3057\u305f\u8981\u7d20\u3068\u306e\u8ddd\u96e2\u3092\u5168\u8981\u7d20\u306b\u5bfe\u3057\u3066\u8a08\u7b97
       for(int j = 1; j < dotList.size(); j++){
         PVector p2 = dotList.get(j).p;
+        // \u4e8c\u70b9\u9593\u306e\u8ddd\u96e2
         float d1 = dist(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+        // \u6700\u77ed\u8ddd\u96e2\u306b\u3042\u308b\u70b9\u3068\u306e\u8ddd\u96e2
         float d2 = dist(p1.x, p1.y, p1.z, min_Pos.x, min_Pos.y, min_Pos.z);
+        // \u4e8c\u3064\u306e\u8981\u7d20\u304c\u540c\u4e00\u306e\u3082\u306e\u3067\u7121\u3044\u5834\u5408
+        // \u4e8c\u70b9\u9593\u306e\u8ddd\u96e2\u3092\u8a08\u7b97\u3057\u3001\u6700\u5c0f\u5024\u3092\u66f4\u65b0\u3059\u308b
         if(d1 <= d2 && d1 != 0){
+          // \u6700\u77ed\u8ddd\u96e2\u306e\u30aa\u30d6\u30b8\u30a7\u30af\u30c8
           min_Pos = p2.get();
           dotObj dm = new dotObj();
           dm.p = new PVector(p2.x, p2.y, p2.z);
-          dm.d = d1;
+          dm.d = d1; // \u70b9\u304b\u3089\u306e\u8ddd\u96e2\u3092\u4fdd\u6301
+          // \u30ea\u30b9\u30c8\u3078\u306e\u8ffd\u52a0
           minDotList.add(dm);
-          //minDotList.add(p2.get());
         }
       }
 
-      // \u914d\u5217\u306e\u30bd\u30fc\u30c8
+      // \u914d\u5217\u306e\u30bd\u30fc\u30c8\uff08\u73fe\u5728\u306e\u70b9\u3068\u306e\u8ddd\u96e2\u3067\u30bd\u30fc\u30c8\uff09
       Collections.sort(minDotList, new CompareTwoPoint());
       for(int k = 0; k < minDotList.size(); k++){
         PVector pmin = minDotList.get(k).p;
-        //curveVertex(pmin.x, pmin.y, pmin.z);
+        // \u73fe\u5728\u306e\u70b9\u304b\u3089\u7dda\u3092\u5f15\u304f
         line(p1.x, p1.y, p1.z, pmin.x, pmin.y, pmin.z);
       }
     }
-    //endShape();
   popMatrix();
 }
 
@@ -240,9 +250,10 @@ class CompareTwoPoint implements Comparator<dotObj>
 
 // \u70b9
 class dotObj{
-  PVector p;
-  float d;
+  PVector p;  // \u5ea7\u6a19
+  float d;    // \u6307\u5b9a\u3057\u305f\u70b9\u3068\u306e\u8ddd\u96e2
 
+  // \u30b3\u30f3\u30b9\u30c8\u30e9\u30af\u30bf
   public void dotObj(){}
 
   public void dotObj(float x, float y, float z){

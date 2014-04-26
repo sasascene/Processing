@@ -76,7 +76,7 @@ void drwawParticle(PVector particle, float s) {
 void draw() {
 
 	// 画面の初期化
-	background(20);
+	background(20, 60);
 
 	pushMatrix();
 
@@ -84,15 +84,16 @@ void draw() {
 	  translate(width/2, height/2, 0);
 
 	  // オブジェクトの描画
-	  for(int i = 3; i < 8; i++){
-      stroke(255 - (10 * i), 200 - (20 * i));
+	  for(int i = 0; i < 8; i++){
+      stroke(255 - (10 * i), 200 - (30 * i));
 	    drawSphereRotate(i);
 	  }
 
 	popMatrix();
 
+  // 光る点を描画
 	PVector particle = new PVector(width/2, height/2, 0);
-	drwawParticle(particle, t);
+	//drwawParticle(particle, t);
 }
 
 
@@ -100,46 +101,48 @@ void draw() {
 void drawSphereRotate(int n){
 
   // トリガーを取得
-  float radius = n * 40;
+  float radius = n * 30;
 
-  strokeWeight(5);
+  // 点の太さ
+  strokeWeight(3);
 
   // リストの初期化
   dotList.clear();
 
   t = t + 1;
-  float radt = radians(t);
 
   pushMatrix();
-    rotateX(frameCount * n * 0.1 + oscp);
-    rotateY(frameCount * n * 0.1 + oscp);
-    float s = 0;
+    rotateX(frameCount * n * 0.005);
+    rotateY(frameCount * n * 0.005);
+    rotateZ(frameCount * n * 0.005);
+    rotateZ(oscp);
 
     PVector lastPos = new PVector(0, 0, 0);
     PVector thisPos = new PVector(0, 0, 0);
-
     float noisFactor = noise(_noiseSeed);
-    float noisVal = 0;
-    for(float i = 0; i < 360; i = i + 36){ // 横
+    
+    for(float i = 0; i < 360; i = i + 32){ // 横
     //for(float i = 0; i < 360; i = i + 64*noise(_noiseSeed)){ // 横
       float radianS = radians(i);
       for(float j = 0; j < 360; j = j + 18){ // 縦
       //for(float j = 0; j < 360; j = j + 64*noise(_noiseSeed)){ // 縦
         float radianT = radians(j);
         float radiant = radians(t);
-        thisPos.x = 0 + (radius * cos(radianS) * sin(radianT)) + (noisFactor*10)-5;
+        thisPos.x = 0 + (radius * cos(radianS) * sin(radianT));// + (noisFactor*10)-5;
         thisPos.y = 0 + (radius * sin(radianS) * sin(radianT));
-        thisPos.z = 0 + (radius * cos(radianT))  + (noisFactor*10)-5;
+        thisPos.z = 0 + (radius * cos(radianT));//  + (noisFactor*10)-5;
         if(lastPos.x != 0){
-          point(thisPos.x, thisPos.y, thisPos.z);
+          //point(thisPos.x, thisPos.y, thisPos.z);
         }
         
+        // リストへの追加
         dotObj d1 = new dotObj();
         d1.p = new PVector(thisPos.x, thisPos.y, thisPos.z);
         dotList.add(d1);
-        //dotList.add(thisPos.get());
 
+        // 直前の点を更新
         lastPos = thisPos.get();
+        // ノイズの種を更新
         _noiseSeed = _noiseSeed + 0.01;
       }
     }
@@ -161,39 +164,46 @@ void drawSphereRotate(int n){
 // 最短点の探索
 void drawCloseDot(int n){
 
-  strokeWeight((9 - n)/2);
+  // 線の太さ（外側をより細く）
+  strokeWeight((9 - n)/3 + 0.5);
 
-  // リストの初期化
   pushMatrix();
-    //beginShape();
-    noFill();
+    // リストの全要素をループ
     for(int i = 1; i < dotList.size(); i++){
+      // リストの初期化
       minDotList.clear();
+      // 最短距離の点
       PVector min_Pos = new PVector(0, 0, 0);
+      // リストから要素を取得
       PVector p1 = dotList.get(i).p;
+      //　取得した要素との距離を全要素に対して計算
       for(int j = 1; j < dotList.size(); j++){
         PVector p2 = dotList.get(j).p;
+        // 二点間の距離
         float d1 = dist(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+        // 最短距離にある点との距離
         float d2 = dist(p1.x, p1.y, p1.z, min_Pos.x, min_Pos.y, min_Pos.z);
+        // 二つの要素が同一のもので無い場合
+        // 二点間の距離を計算し、最小値を更新する
         if(d1 <= d2 && d1 != 0){
+          // 最短距離のオブジェクト
           min_Pos = p2.get();
           dotObj dm = new dotObj();
           dm.p = new PVector(p2.x, p2.y, p2.z);
-          dm.d = d1;
+          dm.d = d1; // 点からの距離を保持
+          // リストへの追加
           minDotList.add(dm);
-          //minDotList.add(p2.get());
         }
       }
 
-      // 配列のソート
+      // 配列のソート（現在の点との距離でソート）
       Collections.sort(minDotList, new CompareTwoPoint());
       for(int k = 0; k < minDotList.size(); k++){
         PVector pmin = minDotList.get(k).p;
-        //curveVertex(pmin.x, pmin.y, pmin.z);
+        // 現在の点から線を引く
         line(p1.x, p1.y, p1.z, pmin.x, pmin.y, pmin.z);
       }
     }
-    //endShape();
   popMatrix();
 }
 
@@ -218,9 +228,10 @@ class CompareTwoPoint implements Comparator<dotObj>
 
 // 点
 class dotObj{
-  PVector p;
-  float d;
+  PVector p;  // 座標
+  float d;    // 指定した点との距離
 
+  // コンストラクタ
   void dotObj(){}
 
   void dotObj(float x, float y, float z){
