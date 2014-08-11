@@ -103,7 +103,7 @@ void drawSphere(){
 // 球クラス
 class sphereObj{
   PVector m_center;  // 中心座標
-  float m_radius;    // 半径
+  float m_radius;    // 指定した点との距離
   float m_phase;	 // 位相
   float m_frequency; // 固有振動数
 
